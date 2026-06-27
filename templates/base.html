@@ -1,0 +1,323 @@
+{% load static %}
+<!doctype html>
+<html lang="en" id="main-html" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SyncAI | Advanced Analytics{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root { --sidebar-width: 280px; --sidebar-collapsed-width: 92px; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.4s ease; }
+        
+        /* Glassmorphism Core */
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .dark .glass { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .ai-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .ai-text-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Sidebar Transitions */
+        #sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        #sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        #sidebar.collapsed { min-width: var(--sidebar-collapsed-width); }
+        #sidebar.collapsed .nav-text, #sidebar.collapsed .sidebar-header-text, #sidebar.collapsed .signout-text { opacity: 0; pointer-events: none; width: 0; }
+        #sidebar.collapsed .nav-item { justify-content: center; }
+        #sidebar.collapsed .nav-item.active::before { left: 0; }
+        #sidebar.collapsed .sidebar-user-meta { opacity: 0; width: 0; overflow: hidden; }
+        #sidebar.collapsed .sidebar-footer-card { padding-left: 0.5rem; padding-right: 0.5rem; }
+
+        /* Dynamic Island Navbar */
+        #dynamic-island { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 60%; transform: translate(-50%, 0); }
+        #dynamic-island.scrolled { width: 40%; transform: translate(-50%, 10px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.2); }
+
+        /* Layout Content Push */
+        #main-content { transition: margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Micro-interactions */
+        .nav-item { position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-item:hover { transform: scale(1.02); }
+        .nav-item:active { transform: scale(0.98); }
+        .nav-item.active::before { content: ''; position: absolute; left: -16px; height: 70%; width: 4px; background: #6366f1; border-radius: 0 4px 4px 0; }
+
+        /* Page Transitions */
+        .page-fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Messages */
+        .toast-msg { animation: slideIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#0b0f1a] text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div id="toast-container" class="fixed top-6 right-6 z-[100] space-y-4">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-msg glass dark:bg-slate-900/80 p-4 rounded-2xl shadow-2xl flex items-center gap-4 border-l-4 
+                {% if message.tags == 'success' %}border-emerald-500{% elif message.tags == 'error' %}border-rose-500{% else %}border-indigo-500{% endif %}">
+                <div class="p-2 rounded-xl {% if message.tags == 'success' %}bg-emerald-500/10 text-emerald-500{% else %}bg-indigo-500/10 text-indigo-500{% endif %}">
+                    <i data-lucide="{% if message.tags == 'success' %}check-circle{% else %}info{% endif %}" class="w-5 h-5"></i>
+                </div>
+                <div class="pr-8">
+                    <p class="text-sm font-bold">{{ message }}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 p-1 opacity-50 hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="flex h-screen overflow-hidden relative z-10">
+        
+        <aside id="sidebar" class="glass m-4 mr-0 rounded-[32px] flex flex-col p-4 shadow-xl z-50">
+            <div class="flex items-center justify-between mb-8 px-2 overflow-hidden">
+                <div class="flex items-center gap-3">
+                    <div class="ai-gradient p-3 rounded-2xl text-white shadow-lg shrink-0">
+                        <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                    </div>
+                    <span class="sidebar-header-text font-extrabold text-xl tracking-tighter ai-text-gradient whitespace-nowrap transition-all duration-300">SyncAI</span>
+                </div>
+                <button id="sidebar-toggle" type="button" aria-label="Toggle sidebar" class="p-2 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all">
+                    <i data-lucide="chevron-left" id="toggle-icon" class="w-5 h-5 transition-transform duration-500"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 space-y-2 overflow-y-auto px-1 no-scrollbar">
+                {% url 'dashboard' as dash_url %}
+                <a href="{{ dash_url }}" class="nav-item nav-link-custom {% if request.path == dash_url %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="layout-dashboard" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Dashboard</span>
+                </a>
+                {% if user.is_authenticated and user.role == 'student' %}
+                <a href="{% url 'update_profile' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'update_profile' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="user-round-cog" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-cyan-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Profile</span>
+                </a>
+                {% endif %}
+                
+                <div class="h-px bg-slate-200/50 dark:bg-slate-800/50 my-4 mx-2"></div>
+                
+                <a href="{% url 'ai_tutor_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_tutor_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="sparkles" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-indigo-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Mentor Notes{% else %}AI Tutor{% endif %}
+                    </span>
+                </a>
+                <a href="{% url 'dropout_prediction_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'dropout_prediction_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="shield-alert" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-rose-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Risk Watchlist{% else %}Dropout Prediction{% endif %}
+                    </span>
+                </a>
+                <a href="{% url 'ai_counseling_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_counseling_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="heart-handshake" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-emerald-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Intervention Desk{% else %}Counseling System{% endif %}
+                    </span>
+                </a>
+                <a href="{% url 'student_analysis_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'student_analysis_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="bar-chart-big" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-blue-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Student Analytics{% else %}Student Analytics{% endif %}
+                    </span>
+                </a>
+                <a href="{% url 'study_planner_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'study_planner_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="calendar-check" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-amber-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Follow-up Planner{% else %}Study Planner{% endif %}
+                    </span>
+                </a>
+                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="sticky-note" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-teal-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Teaching Notes{% else %}Notes{% endif %}
+                    </span>
+                </a>
+                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-purple-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Class Progress{% else %}Higher Studies{% endif %}
+                    </span>
+                </a>
+                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
+                    <i data-lucide="briefcase" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-orange-500"></i>
+                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
+                        {% if user.is_authenticated and user.role != 'student' %}Teacher Actions{% else %}Placement Support{% endif %}
+                    </span>
+                </a>
+            </nav>
+
+            <div class="mt-auto space-y-4">
+                <button id="theme-btn" class="nav-item w-full flex items-center gap-4 p-3 rounded-2xl bg-slate-100/50 dark:bg-slate-800/50 group">
+                    <div class="relative w-6 h-6 shrink-0">
+                        <i data-lucide="sun" id="sun-icon" class="absolute inset-0 w-6 h-6 text-amber-500 transition-all"></i>
+                        <i data-lucide="moon" id="moon-icon" class="absolute inset-0 w-6 h-6 text-indigo-400 transition-all opacity-0"></i>
+                    </div>
+                    <span class="nav-text font-bold whitespace-nowrap transition-all duration-300">Appearance</span>
+                </button>
+
+        <div class="sidebar-footer-card bg-slate-900 dark:bg-slate-800 p-3 rounded-[24px] overflow-hidden relative group">
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    <div class="flex items-center gap-4 relative z-10">
+        <div class="w-14 h-14 shrink-0 rounded-2xl border border-slate-700 overflow-hidden bg-indigo-100">
+            {% if profile_image_url %}
+                <img src="{{ profile_image_url }}" class="w-full h-full object-cover" alt="Avatar">
+            {% else %}
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ request.user.username }}" class="w-full h-full object-cover" alt="Avatar">
+            {% endif %}
+        </div>
+
+        <div class="sidebar-user-meta nav-text overflow-hidden transition-all duration-300">
+            <p class="text-white font-bold text-sm truncate uppercase">{{ user.username }}</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{{ user.role|default:"Guest" }}</p>
+            <a href="{% url 'logout' %}" class="text-indigo-400 text-xs font-bold hover:text-indigo-300 flex items-center gap-1">
+                <i data-lucide="log-out" class="w-3 h-3"></i> <span>Sign Out</span>
+            </a>
+        </div>
+    </div>
+</div>
+            </div>
+        </aside>
+
+        <main id="main-content" class="flex-1 flex flex-col relative h-screen">
+            
+            <header class="h-24 flex items-center justify-center px-8 pointer-events-none relative z-[60]">
+                <div id="dynamic-island" class="glass pointer-events-auto h-16 rounded-[24px] flex items-center justify-between px-6 shadow-lg border-white/50 fixed left-1/2">
+                    <form method="GET" action="{{ request.path }}" class="flex items-center gap-4 flex-1">
+                        <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ search_query|default:'' }}"
+                            placeholder="{% if user.is_authenticated and user.role != 'student' %}Search students, college, roll no...{% else %}Quick find...{% endif %}"
+                            class="bg-transparent border-none outline-none w-full text-sm font-medium"
+                        >
+                    </form>
+
+                    <div class="flex items-center gap-6">
+                        <div class="relative group cursor-pointer">
+                            <i data-lucide="bell" class="w-5 h-5 text-slate-500 hover:text-indigo-500 transition-colors"></i>
+                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                        </div>
+                        <div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="flex items-center gap-3 group cursor-pointer">
+
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-500 transition-colors">
+        {% if user.is_authenticated and user.role != 'student' %}Teacher{% else %}Profile{% endif %}
+    </p>
+    
+    <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-indigo-100">
+        {% if profile_image_url %}
+            <img src="{{ profile_image_url }}" class="w-full h-full object-cover" alt="User">
+        {% else %}
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ request.user.username }}" class="w-full h-full object-cover" alt="User">
+        {% endif %}
+    </div>
+</div>
+                </div>
+            </header>
+
+            <section class="flex-1 overflow-y-auto px-8 pb-12 no-scrollbar">
+                <div class="page-fade-in">
+                    {% block content %}{% endblock content %}
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="fixed top-0 right-0 p-12 opacity-10 pointer-events-none">
+        <i data-lucide="sparkles" class="w-64 h-64 text-indigo-500 animate-pulse-slow"></i>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialization
+        lucide.createIcons();
+        const html = document.getElementById('main-html');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const island = document.getElementById('dynamic-island');
+        const themeBtn = document.getElementById('theme-btn');
+        const mainScrollArea = document.querySelector('section');
+
+        // Sidebar Toggle Logic
+        if (sidebarToggle && sidebar && toggleIcon) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                toggleIcon.style.transform = isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+                sidebarToggle.setAttribute('aria-expanded', String(!isCollapsed));
+            });
+        }
+
+        // Dynamic Island Scroll Logic
+        if (mainScrollArea && island) {
+            mainScrollArea.addEventListener('scroll', (e) => {
+                if (e.target.scrollTop > 20) {
+                    island.classList.add('scrolled');
+                } else {
+                    island.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // Theme Toggle Logic
+        const updateThemeIcons = (isDark) => {
+            document.getElementById('sun-icon').style.opacity = isDark ? '0' : '1';
+            document.getElementById('moon-icon').style.opacity = isDark ? '1' : '0';
+        };
+
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            html.classList.add('dark');
+            updateThemeIcons(true);
+        }
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const isDark = html.classList.contains('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeIcons(isDark);
+            });
+        }
+
+        // Auto-remove toasts
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast-msg');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(50px)';
+                    setTimeout(() => toast.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

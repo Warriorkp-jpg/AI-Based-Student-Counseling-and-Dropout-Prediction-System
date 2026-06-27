@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}AI Counseling Dashboard | SyncAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 p-4">
+    <div class="rounded-[2.5rem] overflow-hidden bg-slate-950 text-white shadow-2xl">
+        <div class="grid lg:grid-cols-[1.35fr,0.9fr] gap-6 p-8 md:p-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.22),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),_transparent_28%),linear-gradient(135deg,_#111827,_#1e1b4b_58%,_#0f172a)]">
+            <div class="space-y-4">
+                <span class="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.3em] text-indigo-100">
+                    <i data-lucide="message-square-heart" class="w-4 h-4"></i>
+                    AI Counseling
+                </span>
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight">Personal support that fits the rest of your SyncAI portal.</h1>
+                <p class="max-w-2xl text-slate-300 text-base md:text-lg">
+                    Review your counseling result, understand your current risk factors, and chat with SyncAI for practical help with stress, attendance, studies, and financial issues.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-2xl bg-white text-slate-900 px-5 py-3 font-bold shadow-lg hover:bg-slate-100 transition-all">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        Back to Dashboard
+                    </a>
+                    <a href="{% url 'update_profile' %}" class="inline-flex items-center gap-2 rounded-2xl bg-white/10 border border-white/10 px-5 py-3 font-bold hover:bg-white/20 transition-all">
+                        <i data-lucide="user-round-cog" class="w-4 h-4"></i>
+                        Update Profile
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                <p class="text-xs font-black uppercase tracking-[0.3em] text-indigo-100/80">Profile Snapshot</p>
+                <div class="mt-6 flex items-center gap-4">
+                    <div class="h-20 w-20 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/10">
+                        {% if student.profile_image %}
+                        <img src="{{ student.profile_image.url }}" class="h-full w-full object-cover" alt="{{ student.user.username }}">
+                        {% else %}
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ student.user.username }}" class="h-full w-full object-cover" alt="{{ student.user.username }}">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-xl font-black">{{ student.user.username }}</p>
+                        <p class="text-sm text-slate-300">{{ student.get_course_display|default:"Course not set" }}</p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400 mt-1">Attendance {{ student.attendance }}% • CGPA {{ student.cgpa }}</p>
+                    </div>
+                </div>
+                <div class="mt-6 rounded-2xl bg-slate-950/50 p-4 border border-white/5">
+                    <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black">Current Risk</p>
+                    <p class="mt-2 text-3xl font-black {% if risk == 'High' %}text-rose-400{% elif risk == 'Medium' %}text-amber-300{% else %}text-emerald-400{% endif %}">
+                        {{ risk }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">CGPA</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.cgpa }}</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Attendance</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.attendance }}%</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Stress Level</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.stress_level }}/10</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Financial Status</p>
+            <p class="mt-3 text-lg font-black text-slate-900 dark:text-white">
+                {% if student.financial_problem %}Needs Support{% else %}Stable{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr,1.1fr] gap-8">
+        <div class="space-y-8">
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Counseling Result</p>
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-white">AI counseling summary</h2>
+                    </div>
+                </div>
+                <div class="rounded-[1.5rem] bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-5">
+                    <div class="whitespace-pre-line text-sm md:text-base leading-7 text-slate-600 dark:text-slate-300">{{ advice }}</div>
+                </div>
+            </div>
+
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Counseling Actions</p>
+                <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Recommended next steps</h2>
+                <div class="mt-6 space-y-4">
+                    {% for suggestion in suggestions %}
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 flex items-start gap-4">
+                        <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 shrink-0">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-sm leading-7 text-slate-600 dark:text-slate-300">{{ suggestion }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 p-4 text-sm text-slate-500 dark:text-slate-400">
+                        No counseling suggestions are available yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Upcoming Features</p>
+                <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Connected support tools</h2>
+                <div class="mt-6 grid gap-4">
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-300">AI Tutor that answers study and concept questions using your profile data.</div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-300">Dropout prediction report with AI explanation of why your current risk looks the way it does.</div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 text-sm text-slate-600 dark:text-slate-300">Study planner and student analysis pages that reuse the same profile and AI connection.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none flex flex-col h-[680px] overflow-hidden">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="bot" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-900 dark:text-white">SyncAI Chatbot</h3>
+                        <p class="text-xs uppercase tracking-[0.2em] text-emerald-500 font-bold">Active</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-window" class="flex-1 min-h-0 overflow-y-auto p-6 space-y-5 scroll-smooth">
+                {% for item in chat_history %}
+                <div class="chat-row flex {% if item.sender == 'user' %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm {% if item.sender == 'user' %}bg-indigo-600 text-white rounded-br-md{% else %}bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-md{% endif %}">
+                        <p class="text-xs font-black uppercase tracking-[0.18em] mb-2 {% if item.sender == 'user' %}text-indigo-100{% else %}text-slate-400{% endif %}">
+                            {{ item.sender }}
+                        </p>
+                        <p class="text-sm leading-7">{{ item.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800">
+                <form id="chat-form" method="POST" class="flex items-end gap-3">
+                    {% csrf_token %}
+                    <div class="flex-1">
+                        <label class="sr-only" for="message">Message</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Ask about your risk, stress, attendance, studies, or financial pressure..." class="w-full rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 font-bold shadow-lg shadow-indigo-500/20 transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const chatWindow = document.getElementById('chat-window');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+    const csrfToken = chatForm?.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+
+    const scrollChatToBottom = () => {
+        if (chatWindow) {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    };
+
+    const buildChatRow = (sender, text) => {
+        const row = document.createElement('div');
+        row.className = `chat-row flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'user'
+            ? 'max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm bg-indigo-600 text-white rounded-br-md'
+            : 'max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-md';
+
+        const label = document.createElement('p');
+        label.className = sender === 'user'
+            ? 'text-xs font-black uppercase tracking-[0.18em] mb-2 text-indigo-100'
+            : 'text-xs font-black uppercase tracking-[0.18em] mb-2 text-slate-400';
+        label.textContent = sender;
+
+        const body = document.createElement('p');
+        body.className = 'text-sm leading-7';
+        body.textContent = text;
+
+        bubble.appendChild(label);
+        bubble.appendChild(body);
+        row.appendChild(bubble);
+        return row;
+    };
+
+    scrollChatToBottom();
+
+    if (chatForm && messageInput && csrfToken) {
+        chatForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            const submitButton = chatForm.querySelector('button[type="submit"]');
+            if (submitButton) submitButton.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('message', text);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                const response = await fetch(chatForm.action || window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData,
+                });
+
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.error || 'Unable to send message right now.');
+                }
+
+                payload.messages.forEach((item) => {
+                    chatWindow.appendChild(buildChatRow(item.sender, item.text));
+                });
+                messageInput.value = '';
+                scrollChatToBottom();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                if (submitButton) submitButton.disabled = false;
+                messageInput.focus();
+            }
+        });
+    }
+</script>
+{% endblock %}

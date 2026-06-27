@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Profile | SyncAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Student Record</p>
+            <h1 class="mt-2 text-4xl font-black tracking-tight text-slate-900 dark:text-white">{{ student.user.username }}</h1>
+            <p class="mt-2 text-slate-500 dark:text-slate-400">A complete teacher-side view of academic, wellness, and support information.</p>
+        </div>
+        <a href="{% url 'dashboard' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-lg shadow-slate-200/50 border border-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700 dark:shadow-none">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to teacher dashboard
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[0.9fr,1.35fr] gap-8">
+        <div class="space-y-8">
+            <div class="rounded-[2.5rem] border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <div class="flex flex-col items-center text-center">
+                    <div class="h-44 w-44 overflow-hidden rounded-[2.5rem] border-4 border-cyan-100 bg-cyan-50 shadow-2xl dark:border-cyan-900/40 dark:bg-cyan-950/20">
+                        {% if student_profile_image_url %}
+                        <img src="{{ student_profile_image_url }}" alt="{{ student.user.username }}" class="h-full w-full object-cover">
+                        {% else %}
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ student.user.username }}" alt="{{ student.user.username }}" class="h-full w-full object-cover">
+                        {% endif %}
+                    </div>
+                    <h2 class="mt-6 text-3xl font-black text-slate-900 dark:text-white">{{ student.user.username }}</h2>
+                    <p class="mt-2 text-sm font-bold uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-300">{{ student.get_course_display|default:"Course not set" }}</p>
+                    <span class="mt-5 inline-flex rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em]
+                        {% if risk == 'High' %}
+                            bg-rose-500 text-white
+                        {% elif risk == 'Medium' %}
+                            bg-amber-400/20 text-amber-700 dark:text-amber-300
+                        {% else %}
+                            bg-emerald-500/15 text-emerald-700 dark:text-emerald-300
+                        {% endif %}">
+                        {{ risk }} Risk
+                    </span>
+                </div>
+
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Year</p>
+                        <p class="mt-2 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.year|default:"N/A" }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Roll No</p>
+                        <p class="mt-2 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.roll_no|default:"Not set" }}</p>
+                    </div>
+                    <div class="col-span-2 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">College</p>
+                        <p class="mt-2 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.clg_name|default:"Not set" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[2.5rem] border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Teacher Guidance</p>
+                <h3 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Suggested intervention notes</h3>
+                <div class="mt-6 space-y-3">
+                    {% for suggestion in suggestions %}
+                    <div class="rounded-2xl bg-cyan-50/80 p-4 text-sm text-slate-700 dark:bg-cyan-950/20 dark:text-slate-200">
+                        {{ suggestion }}
+                    </div>
+                    {% empty %}
+                    <p class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-800/70 dark:text-slate-300">No recommendations available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div class="rounded-[2.5rem] border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Performance Metrics</p>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="rounded-[2rem] bg-gradient-to-br from-blue-50 to-white p-6 dark:from-blue-950/20 dark:to-slate-900">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">CGPA</p>
+                        <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.cgpa }}</p>
+                    </div>
+                    <div class="rounded-[2rem] bg-gradient-to-br from-emerald-50 to-white p-6 dark:from-emerald-950/20 dark:to-slate-900">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Attendance</p>
+                        <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.attendance }}%</p>
+                    </div>
+                    <div class="rounded-[2rem] bg-gradient-to-br from-orange-50 to-white p-6 dark:from-orange-950/20 dark:to-slate-900">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Stress Level</p>
+                        <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student.stress_level }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[2.5rem] border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Support Background</p>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Financial Concern</p>
+                        <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                            {% if student.financial_problem %}Yes{% else %}No{% endif %}
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Annual Income</p>
+                        <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">₹ {{ student.annual_income|default:"Not set" }}</p>
+                    </div>
+                    <div class="md:col-span-2 rounded-[2rem] bg-slate-50 p-6 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Reported Problems</p>
+                        <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                            {{ student.problems|default:"No specific challenges submitted by the student." }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[2.5rem] border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Record Info</p>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Username</p>
+                        <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ student.user.username }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/70">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Joined Profile</p>
+                        <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ student.created_at|date:"d M Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

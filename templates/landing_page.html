@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | AI Student Counseling & Prediction</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.12.0/tsparticles.confetti.bundle.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .ai-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .glass { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        
+        /* Smooth scrolling for anchor links */
+        html { scroll-behavior: smooth; }
+
+        /* Animation Container */
+        #tsparticles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Keep it behind everything */
+            background-color: #f8fafc; /* Your bg-slate-50 color */
+        }
+
+        /* Card Interaction Effect */
+        .card-hover:hover { 
+            transform: translateY(-12px) scale(1.02); 
+            box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.15); 
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <div id="tsparticles"></div>
+
+    <nav class="fixed w-full top-0 z-50 px-6 py-4 mt-2">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass rounded-[2rem] px-8 py-3 shadow-lg border border-white/40">
+            <div class="flex items-center gap-2">
+                <div class="ai-gradient p-2.5 rounded-2xl text-white shadow-md">
+                    <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                </div>
+                <span class="text-2xl font-extrabold text-slate-900 tracking-tighter">Sync<span class="text-indigo-600">AI</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700">
+                <a href="#features" class="hover:text-indigo-600 transition-colors">Features</a>
+                <a href="#about" class="hover:text-indigo-600 transition-colors">How it works</a>
+                <a href="{% url 'login' %}" class="hover:text-indigo-600 transition-colors">Login</a>
+                <a href="{% url 'register' %}" class="ai-gradient text-white px-7 py-3 rounded-2xl shadow-lg shadow-indigo-100 hover:scale-105 transition-transform active:scale-95">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-44 pb-28 px-6 bg-transparent">
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <span class="inline-flex items-center gap-2 px-5 py-2 rounded-full glass text-indigo-700 text-xs font-bold uppercase tracking-widest mb-8 shadow-sm border border-indigo-100">
+                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-500"></i> Next-Gen Student Analytics
+            </span>
+            <h1 class="text-6xl md:text-8xl font-black text-slate-950 leading-[0.95] tracking-tighter mb-10">
+                AI Counseling & <br>
+                <span class="text-transparent bg-clip-text ai-gradient">Dropout Prediction</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-xl text-slate-600 mb-12 leading-relaxed font-medium">
+                We use advanced machine learning to identify at-risk students early, providing actionable insights for teachers and personalized counseling for students.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-5">
+                <a href="{% url 'register' %}" class="w-full sm:w-auto px-12 py-5 ai-gradient text-white rounded-[1.8rem] font-bold shadow-2xl shadow-indigo-200 hover:scale-105 hover:shadow-indigo-300 transition-all text-lg flex items-center justify-center gap-2.5">
+                    Start Predicting Success <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+                <a href="#features" class="w-full sm:w-auto px-12 py-5 glass text-slate-800 rounded-[1.8rem] font-bold hover:bg-white transition-all text-lg flex items-center justify-center gap-2">
+                    Explore Features <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-28 px-6 bg-white rounded-t-[4rem] shadow-inner relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 max-w-xl mx-auto">
+                <h2 class="text-5xl font-black text-slate-950 tracking-tight mb-5">Predict, Intervene, <span class="text-indigo-600">Succeed.</span></h2>
+                <p class="text-lg text-slate-600">SyncAI provides a proactive, data-driven approach to student retention.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="p-9 rounded-[2.8rem] bg-slate-50 border border-slate-100 card-hover transition-all duration-500 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="w-16 h-16 rounded-3xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="brain" class="w-9 h-9"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight">AI Prediction Model</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">Our core algorithm analyzes hundreds of data points to forecast dropout probability with high accuracy.</p>
+                    </div>
+                    <a href="#" class="text-indigo-600 font-bold text-sm flex items-center gap-2 hover:underline">Learn Tech <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                </div>
+
+                <div class="p-9 rounded-[2.8rem] bg-slate-50 border border-slate-100 card-hover transition-all duration-500 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="w-16 h-16 rounded-3xl bg-purple-100 text-purple-600 flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="message-square-heart" class="w-9 h-9"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight">Personalized Counseling</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">AI SyncBot generates tailored wellness suggestions based on student stress and financial data.</p>
+                    </div>
+                    <a href="#" class="text-purple-600 font-bold text-sm flex items-center gap-2 hover:underline">See Counseling <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                </div>
+
+                <div class="p-9 rounded-[2.8rem] bg-slate-50 border border-slate-100 card-hover transition-all duration-500 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="w-16 h-16 rounded-3xl bg-orange-100 text-orange-600 flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="layout-grid" class="w-9 h-9"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight">Teacher Command Center</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">A centralized dashboard allowing educators to view class risk levels and manage interventions.</p>
+                    </div>
+                    <a href="#" class="text-orange-600 font-bold text-sm flex items-center gap-2 hover:underline">Explore Portal <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                </div>
+
+                <div class="p-9 rounded-[2.8rem] bg-slate-50 border border-slate-100 card-hover transition-all duration-500 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="w-16 h-16 rounded-3xl bg-blue-100 text-blue-600 flex items-center justify-center mb-8 shadow-inner">
+                            <i data-lucide="line-chart" class="w-9 h-9"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight">Student Self-Tracking</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">Interactive graphics help students monitor their own CGPA, attendance, and risk factors.</p>
+                    </div>
+                    <a href="#" class="text-blue-600 font-bold text-sm flex items-center gap-2 hover:underline">Student View <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-950 pt-24 pb-12 px-6 text-white rounded-t-[4rem] relative z-10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-slate-800 pb-20">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="bg-white p-2.5 rounded-2xl text-indigo-600 shadow-md">
+                        <i data-lucide="brain-circuit" class="w-7 h-7"></i>
+                    </div>
+                    <span class="text-2xl font-black tracking-tight">Sync<span class="text-indigo-400">AI</span> Systems</span>
+                </div>
+                <p class="text-slate-400 max-w-sm mb-10 leading-relaxed text-sm">
+                    Leveraging artificial intelligence to create a proactive academic ecosystem, ensuring no student is left behind.
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-7 text-slate-100">Platform</h4>
+                <ul class="space-y-4 text-slate-400 text-sm">
+                    <li><a href="#" class="hover:text-indigo-400 transition">AI Prediction</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">Counseling Bot</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">Teacher Dashboard</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">Student Analytics</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold mb-7 text-slate-100">Connect</h4>
+                <ul class="space-y-4 text-slate-400 text-sm">
+                    <li><a href="#" class="hover:text-indigo-400 transition">Contact Sales</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">API Documentation</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">Support Center</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto pt-12 flex flex-col md:flex-row justify-between items-center text-slate-600 text-xs">
+            <p>© 2026 SyncAI Systems, Inc. All rights reserved.</p>
+            <div class="flex gap-7 mt-5 md:mt-0">
+                <a href="#" class="hover:text-slate-400"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                <a href="#" class="hover:text-slate-400"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                <a href="#" class="hover:text-slate-400"><i data-lucide="github" class="w-5 h-5"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // 🧠 Neural Network Animation Configuration
+        confetti.addPlugin({
+            id: "tsparticles",
+            plugin: {
+                loadOptions: (options) => {
+                    options.fpsLimit = 60;
+                    options.interactivity = {
+                        events: {
+                            onClick: { enable: true, mode: "push" },
+                            onHover: { enable: true, mode: "grab" }, // Interactive on hover!
+                            resize: true,
+                        },
+                        modes: {
+                            push: { quantity: 4 },
+                            grab: { distance: 200, links: { opacity: 0.3 } },
+                        },
+                    };
+                    options.particles = {
+                        color: { value: "#6366f1" }, // Matches indigo-600
+                        links: {
+                            color: "#a855f7", // Matches purple-500
+                            distance: 180,
+                            enable: true,
+                            opacity: 0.2,
+                            width: 1,
+                        },
+                        move: {
+                            direction: "none",
+                            enable: true,
+                            outModes: { default: "bounce" },
+                            random: false,
+                            speed: 1, // Slow and smooth
+                            straight: false,
+                        },
+                        number: { density: { enable: true, area: 800 }, value: 80 }, // Amount of nodes
+                        opacity: { value: 0.3 },
+                        shape: { type: "circle" },
+                        size: { value: { min: 1, max: 3 } }, // Varied node size
+                    };
+                    options.detectRetina = true;
+                }
+            }
+        });
+
+        // Initialize particles on the container
+        confetti.create(document.getElementById('tsparticles'), {
+            resize: true,
+            useWorker: true,
+        });
+    </script>
+</body>
+</html>
