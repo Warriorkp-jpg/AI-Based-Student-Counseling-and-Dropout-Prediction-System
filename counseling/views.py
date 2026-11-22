@@ -50,7 +50,7 @@ def ai_counseling_dashboard(request):
         chat_history = [{
             'sender': 'bot',
             'text': (
-                f"Hello {request.user.username}. I reviewed your profile and your current risk level looks {risk.lower()}. "
+                f"Hello {request.user.display_name}. I reviewed your profile and your current risk level looks {risk.lower()}. "
                 "Ask me about attendance, stress, study plans, or financial pressure."
             ),
         }]

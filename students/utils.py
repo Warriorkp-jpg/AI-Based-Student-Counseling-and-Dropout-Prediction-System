@@ -67,7 +67,8 @@ def generate_suggestions(student):
         
    
     
-    if student.annual_income <= 10000:
+    # A new account can reach the dashboard before optional profile details are filled in.
+    if (student.annual_income or 0) <= 10000:
         suggestions.append("""Annual income is less than 1lakh
                            The most usefull scholarship for you is : ....
                            """)

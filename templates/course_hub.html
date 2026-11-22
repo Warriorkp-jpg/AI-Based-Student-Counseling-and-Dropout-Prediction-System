@@ -107,7 +107,7 @@
                         <div class="h-11 w-11 overflow-hidden rounded-2xl bg-violet-100 dark:bg-violet-950/40">
                             {% if item.profile_image %}<img src="{{ item.profile_image.url }}" class="h-full w-full object-cover" alt="{{ item.user.username }}">{% else %}<img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ item.user.username }}" class="h-full w-full object-cover" alt="{{ item.user.username }}">{% endif %}
                         </div>
-                        <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-900 dark:text-white">{{ item.user.username }}</p><p class="text-xs text-slate-500 dark:text-slate-400">Year {{ item.year|default:'N/A' }} • CGPA {{ item.cgpa }}</p></div>
+                        <div class="min-w-0"><p class="truncate text-sm font-bold text-slate-900 dark:text-white">{{ item.user.display_name }}</p><p class="text-xs text-slate-500 dark:text-slate-400">Year {{ item.year|default:'N/A' }} • CGPA {{ item.cgpa }}</p></div>
                     </a>
                     {% empty %}<p class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950/50">No registered student profiles for this course yet.</p>{% endfor %}
                 </div>

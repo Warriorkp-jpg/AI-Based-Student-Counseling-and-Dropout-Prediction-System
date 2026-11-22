@@ -17,7 +17,8 @@ class StudentProfile(models.Model):
     profile_image = models.ImageField(upload_to='students/', blank=True, null=True)
 
     clg_name = models.CharField(max_length=100,blank=True, null= True)
-    roll_no = models.CharField(max_length=10,blank=True, null= True)
+    # A roll number identifies a student account and must not be shared.
+    roll_no = models.CharField(max_length=30, unique=True, blank=True, null=True)
 
     course = models.CharField(max_length=30, choices=COURSE_CHOICES ,null= True , blank= True)
     year = models.IntegerField(blank=True, null= True)
@@ -33,7 +34,7 @@ class StudentProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.display_name
 
 
 class FeedbackConversation(models.Model):
@@ -63,7 +64,7 @@ class FeedbackConversation(models.Model):
         ordering = ['-updated_at']
 
     def __str__(self):
-        return f"{self.teacher.username} and {self.student.username}"
+        return f"{self.teacher.display_name} and {self.student.display_name}"
 
 
 class FeedbackMessage(models.Model):
@@ -81,7 +82,7 @@ class FeedbackMessage(models.Model):
         ordering = ['created_at']
 
     def __str__(self):
-        return f"{self.sender.username}: {self.body[:40]}"
+        return f"{self.sender.display_name}: {self.body[:40]}"
 
 
 class FeedbackAnnouncement(models.Model):

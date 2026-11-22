@@ -38,7 +38,7 @@
                         {% endif %}
                     </div>
                     <div>
-                        <p class="text-xl font-black">{{ student.user.username }}</p>
+                        <p class="text-xl font-black">{{ student.user.display_name }}</p>
                         <p class="text-sm text-slate-300">{{ student.get_course_display|default:"Course not set" }}</p>
                         <p class="text-xs uppercase tracking-[0.2em] text-slate-400 mt-1">Attendance {{ student.attendance }}% • CGPA {{ student.cgpa }}</p>
                     </div>

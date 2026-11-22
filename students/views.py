@@ -112,7 +112,7 @@ def teacher_dashboard(request):
         risk_totals[risk] += 1
         student_rows.append({
             'id': profile.id,
-            'username': profile.user.username,
+            'username': profile.user.display_name,
             'course': profile.get_course_display() if profile.course else 'Not set',
             'year': profile.year or 'N/A',
             'college': profile.clg_name or 'Not set',
@@ -208,7 +208,7 @@ def ai_tutor_dashboard(request):
         chat_history = [{
             'sender': 'bot',
             'text': (
-                f"Hello {request.user.username}, I’m your AI Tutor. "
+                f"Hello {request.user.display_name}, I’m your AI Tutor. "
                 "Ask me about concepts, revision strategy, attendance recovery, or how to study better."
             ),
         }]

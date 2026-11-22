@@ -28,10 +28,18 @@
                 {% csrf_token %}
                 
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Username</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Full Name</label>
                     <div class="relative">
                         <i data-lucide="at-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" name="username" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 outline-none text-sm transition-all" placeholder="Choose a unique username" required>
+                        <input type="text" name="full_name" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 outline-none text-sm transition-all" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Roll / Staff ID</label>
+                    <div class="relative">
+                        <i data-lucide="badge-check" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" name="roll_no" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 outline-none text-sm transition-all uppercase" placeholder="e.g. CSE-2026-014" required>
                     </div>
                 </div>
 
@@ -42,6 +50,8 @@
                         <input type="password" name="password" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 outline-none text-sm transition-all" placeholder="Create a strong password" required>
                     </div>
                 </div>
+
+                <p class="rounded-2xl bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">Student roll numbers are unique. Teacher accounts are submitted for administrator approval before sign-in is enabled.</p>
 
                 <div>
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Your Role</label>
