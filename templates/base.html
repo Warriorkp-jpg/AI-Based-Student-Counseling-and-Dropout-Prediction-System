@@ -121,54 +121,18 @@
                 
                 <div class="h-px bg-slate-200/50 dark:bg-slate-800/50 my-4 mx-2"></div>
                 
-                <a href="{% url 'ai_tutor_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_tutor_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="sparkles" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-indigo-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Mentor Notes{% else %}AI Tutor{% endif %}
-                    </span>
-                </a>
-                <a href="{% url 'dropout_prediction_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'dropout_prediction_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="shield-alert" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-rose-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Risk Watchlist{% else %}Dropout Prediction{% endif %}
-                    </span>
-                </a>
-                <a href="{% url 'ai_counseling_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_counseling_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="heart-handshake" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-emerald-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Intervention Desk{% else %}Counseling System{% endif %}
-                    </span>
-                </a>
-                <a href="{% url 'student_analysis_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'student_analysis_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="bar-chart-big" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-blue-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Student Analytics{% else %}Student Analytics{% endif %}
-                    </span>
-                </a>
-                <a href="{% url 'study_planner_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'study_planner_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="calendar-check" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-amber-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Follow-up Planner{% else %}Study Planner{% endif %}
-                    </span>
-                </a>
-                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="sticky-note" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-teal-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Teaching Notes{% else %}Notes{% endif %}
-                    </span>
-                </a>
-                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="graduation-cap" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-purple-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Class Progress{% else %}Higher Studies{% endif %}
-                    </span>
-                </a>
-                <a href="#" class="nav-item nav-link-custom flex items-center gap-4 p-3 rounded-2xl group">
-                    <i data-lucide="briefcase" class="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform text-orange-500"></i>
-                    <span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">
-                        {% if user.is_authenticated and user.role != 'student' %}Teacher Actions{% else %}Placement Support{% endif %}
-                    </span>
-                </a>
+                {% if user.is_authenticated and user.role == 'student' %}
+                <a href="{% url 'ai_tutor_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_tutor_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="sparkles" class="w-6 h-6 shrink-0 text-indigo-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">AI Tutor</span></a>
+                <a href="{% url 'dropout_prediction_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'dropout_prediction_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="shield-alert" class="w-6 h-6 shrink-0 text-rose-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Dropout Prediction</span></a>
+                <a href="{% url 'ai_counseling_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'ai_counseling_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="heart-handshake" class="w-6 h-6 shrink-0 text-emerald-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Counseling System</span></a>
+                <a href="{% url 'student_analysis_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'student_analysis_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="bar-chart-big" class="w-6 h-6 shrink-0 text-blue-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Student Analysis</span></a>
+                <a href="{% url 'study_planner_dashboard' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'study_planner_dashboard' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="calendar-check" class="w-6 h-6 shrink-0 text-amber-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Study Planner</span></a>
+                <a href="{% url 'course_hub' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'course_hub' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="graduation-cap" class="w-6 h-6 shrink-0 text-purple-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">My Courses</span></a>
+                <a href="{% url 'student_feedback_inbox' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'student_feedback_inbox' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="message-circle-heart" class="w-6 h-6 shrink-0 text-teal-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Feedback Inbox</span></a>
+                {% else %}
+                <a href="{% url 'course_hub' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'course_hub' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="graduation-cap" class="w-6 h-6 shrink-0 text-purple-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Course Hub</span></a>
+                <a href="{% url 'teacher_feedback_hub' %}" class="nav-item nav-link-custom {% if request.resolver_match.url_name == 'teacher_feedback_hub' %}active active-link{% endif %} flex items-center gap-4 p-3 rounded-2xl group"><i data-lucide="messages-square" class="w-6 h-6 shrink-0 text-cyan-500"></i><span class="nav-text font-semibold whitespace-nowrap transition-all duration-300">Feedback Center</span></a>
+                {% endif %}
             </nav>
 
             <div class="mt-auto space-y-4">

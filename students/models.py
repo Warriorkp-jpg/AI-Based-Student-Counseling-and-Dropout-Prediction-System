@@ -34,3 +34,66 @@ class StudentProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class FeedbackConversation(models.Model):
+    """One private feedback thread between a teacher and a student."""
+    teacher = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='teacher_feedback_conversations',
+        limit_choices_to={'role__in': ['teacher', 'admin']},
+    )
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='student_feedback_conversations',
+        limit_choices_to={'role': 'student'},
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['teacher', 'student'],
+                name='unique_teacher_student_feedback_conversation',
+            ),
+        ]
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.teacher.username} and {self.student.username}"
+
+
+class FeedbackMessage(models.Model):
+    """A single professional message inside a private feedback conversation."""
+    conversation = models.ForeignKey(
+        FeedbackConversation,
+        on_delete=models.CASCADE,
+        related_name='messages',
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.body[:40]}"
+
+
+class FeedbackAnnouncement(models.Model):
+    """A teacher announcement for all students or one selected course."""
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedback_announcements')
+    title = models.CharField(max_length=120)
+    body = models.TextField()
+    target_course = models.CharField(max_length=30, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title

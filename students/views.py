@@ -1,7 +1,12 @@
 from django.db.models import Avg, Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect
-from .models import StudentProfile
+from .models import (
+    FeedbackAnnouncement,
+    FeedbackConversation,
+    FeedbackMessage,
+    StudentProfile,
+)
 from django.contrib.auth.decorators import login_required
 from .forms import StudentProfileForm
 from .utils import calculate_risk, generate_suggestions
@@ -12,6 +17,7 @@ from .ai_features import (
     get_student_analysis_report,
     get_study_plan_report,
 )
+from .course_catalog import COURSE_CATALOG, get_course_curriculum
 
 
 def _get_student_profile_or_redirect(request):
@@ -43,6 +49,11 @@ def _get_cached_ai_report(request, cache_key, generator):
         request.session['student_ai_reports'] = cached_reports
         request.session.modified = True
     return cached_reports[cache_key]
+
+
+def _profile_image_url(profile):
+    """Avoid repeating the same profile-image check in each dashboard view."""
+    return profile.profile_image.url if profile and profile.profile_image else None
 
 @login_required
 def dashboard(request):
@@ -321,4 +332,154 @@ def study_planner_dashboard(request):
             'Daily reminder system',
             'Exam countdown planning',
         ],
+    })
+
+
+@login_required
+def course_hub(request):
+    """Show curriculum data for students and a browseable course view for teachers."""
+    if request.user.role == 'student':
+        student = StudentProfile.objects.filter(user=request.user).first()
+        if not student:
+            messages.warning(request, "Please complete your profile first.")
+            return redirect('update_profile')
+
+        curriculum = get_course_curriculum(student.course or 'cse', student.year)
+        return render(request, 'course_hub.html', {
+            'curriculum': curriculum,
+            'student': student,
+            'is_teacher_view': False,
+            'profile_image_url': _profile_image_url(student),
+        })
+
+    # Teachers can preview the same dummy API data for any course and year.
+    course_code = request.GET.get('course', 'cse')
+    if course_code not in COURSE_CATALOG:
+        course_code = 'cse'
+
+    try:
+        selected_year = int(request.GET.get('year', 1))
+    except (TypeError, ValueError):
+        selected_year = 1
+
+    curriculum = get_course_curriculum(course_code, selected_year)
+    course_students = StudentProfile.objects.filter(course=course_code).select_related('user')
+    return render(request, 'course_hub.html', {
+        'curriculum': curriculum,
+        'course_catalog': COURSE_CATALOG,
+        'course_students': course_students,
+        'is_teacher_view': True,
+        'profile_image_url': None,
+    })
+
+
+def _load_feedback_conversation(conversation_id, user, is_teacher):
+    """Fetch a feedback thread only when the logged-in user belongs to it."""
+    conversations = FeedbackConversation.objects.select_related('teacher', 'student')
+    if is_teacher:
+        conversations = conversations.filter(teacher=user)
+    else:
+        conversations = conversations.filter(student=user)
+    return conversations.filter(pk=conversation_id).first()
+
+
+@login_required
+def teacher_feedback_hub(request):
+    """Teachers can broadcast course feedback or continue a private student thread."""
+    if request.user.role == 'student':
+        messages.info(request, "Feedback management is available for teachers.")
+        return redirect('student_feedback_inbox')
+
+    students = StudentProfile.objects.select_related('user').order_by('user__username')
+    selected_conversation = None
+    selected_id = request.GET.get('conversation') or request.POST.get('conversation_id')
+    if selected_id:
+        selected_conversation = _load_feedback_conversation(selected_id, request.user, True)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'announcement':
+            title = request.POST.get('title', '').strip()
+            body = request.POST.get('body', '').strip()
+            target_course = request.POST.get('target_course', '').strip()
+            if title and body:
+                FeedbackAnnouncement.objects.create(
+                    teacher=request.user,
+                    title=title,
+                    body=body,
+                    target_course=target_course,
+                )
+                messages.success(request, "Feedback announcement sent.")
+            else:
+                messages.error(request, "Please add both a title and a message.")
+            return redirect('teacher_feedback_hub')
+
+        if action == 'start_conversation':
+            student_id = request.POST.get('student_id')
+            student_profile = students.filter(pk=student_id).first()
+            if not student_profile:
+                messages.error(request, "That student could not be found.")
+                return redirect('teacher_feedback_hub')
+            conversation, _ = FeedbackConversation.objects.get_or_create(
+                teacher=request.user,
+                student=student_profile.user,
+            )
+            return redirect(f"{request.path}?conversation={conversation.id}")
+
+        if action == 'message' and selected_conversation:
+            body = request.POST.get('body', '').strip()
+            if body:
+                FeedbackMessage.objects.create(
+                    conversation=selected_conversation,
+                    sender=request.user,
+                    body=body,
+                )
+                selected_conversation.save(update_fields=['updated_at'])
+            return redirect(f"{request.path}?conversation={selected_conversation.id}")
+
+    conversations = FeedbackConversation.objects.filter(teacher=request.user).select_related('student').order_by('-updated_at')
+    announcements = FeedbackAnnouncement.objects.filter(teacher=request.user)[:5]
+    return render(request, 'teacher_feedback_hub.html', {
+        'students': students,
+        'conversations': conversations,
+        'selected_conversation': selected_conversation,
+        'announcements': announcements,
+        'course_choices': StudentProfile.COURSE_CHOICES,
+        'profile_image_url': None,
+    })
+
+
+@login_required
+def student_feedback_inbox(request):
+    """Students see announcements for their course and can reply in private teacher threads."""
+    student, redirect_response = _get_student_profile_or_redirect(request)
+    if redirect_response:
+        return redirect_response
+
+    selected_conversation = None
+    selected_id = request.GET.get('conversation') or request.POST.get('conversation_id')
+    if selected_id:
+        selected_conversation = _load_feedback_conversation(selected_id, request.user, False)
+
+    if request.method == 'POST' and selected_conversation:
+        body = request.POST.get('body', '').strip()
+        if body:
+            FeedbackMessage.objects.create(
+                conversation=selected_conversation,
+                sender=request.user,
+                body=body,
+            )
+            selected_conversation.save(update_fields=['updated_at'])
+        return redirect(f"{request.path}?conversation={selected_conversation.id}")
+
+    announcements = FeedbackAnnouncement.objects.filter(
+        Q(target_course='') | Q(target_course=student.course)
+    ).select_related('teacher')
+    conversations = FeedbackConversation.objects.filter(student=request.user).select_related('teacher').order_by('-updated_at')
+    return render(request, 'student_feedback_inbox.html', {
+        'student': student,
+        'announcements': announcements,
+        'conversations': conversations,
+        'selected_conversation': selected_conversation,
+        'profile_image_url': _profile_image_url(student),
     })
