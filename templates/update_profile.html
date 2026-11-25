@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-black text-slate-800 dark:text-white tracking-tight">Account Settings</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Keep your academic profile synchronized with the AI engine.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 transition-all">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Return to Dashboard
+        </a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="profile-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {% csrf_token %}
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 text-center">
+                <div class="relative inline-block group">
+                    <div class="w-40 h-40 rounded-[2.5rem] overflow-hidden border-4 border-indigo-50 dark:border-slate-700 shadow-inner mb-4">
+                        <img id="avatar-preview" 
+                             src="{% if form.instance.profile_image %}{{ form.instance.profile_image.url }}{% else %}https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.username }}{% endif %}" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <label for="{{ form.profile_image.id_for_label }}" class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <i data-lucide="camera" class="text-white w-8 h-8"></i>
+                    </label>
+                    <div class="hidden">
+                        {{ form.profile_image }}
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">{{ user.display_name }}</h3>
+                <p class="text-xs font-black text-indigo-500 uppercase tracking-widest mt-1">Student ID: #{{ user.id }}</p>
+                
+                <p class="text-xs text-slate-400 mt-6 leading-relaxed">
+                    Allowed JPG, GIF or PNG. <br>Max size of 2MB
+                </p>
+            </div>
+
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 text-indigo-400 mb-4">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">AI Readiness</span>
+                    </div>
+                    <p class="text-sm text-slate-300 italic">"Ensure your CGPA and Attendance are accurate for the most precise dropout prediction."</p>
+                </div>
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/20 rounded-full blur-2xl"></div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-8 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                
+                {% if form.errors %}
+                <div class="mb-8 p-4 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-2xl">
+                    <div class="flex items-center gap-2 text-red-700 dark:text-red-400 font-bold mb-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i> Check required fields
+                    </div>
+                    <ul class="text-xs text-red-600 dark:text-red-400 space-y-1 ml-6 list-disc">
+                        {% for field, errors in form.errors.items %}<li>{{ field|title }}: {{ errors.0 }}</li>{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="md:col-span-2 pb-2 border-b border-slate-100 dark:border-slate-700 mb-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Institution Info</h4>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">College Name</label>
+                        {{ form.clg_name }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">Enrolled Course</label>
+                        {{ form.course }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">Academic Year</label>
+                        {{ form.year }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">Roll Number</label>
+                        {{ form.roll_no }}
+                    </div>
+
+                    <div class="md:col-span-2 pb-2 border-b border-slate-100 dark:border-slate-700 mt-4 mb-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Academic Performance</h4>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">Current CGPA</label>
+                        {{ form.cgpa }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label">Attendance (%)</label>
+                        {{ form.attendance }}
+                    </div>
+
+                    <div class="md:col-span-2 pb-2 border-b border-slate-100 dark:border-slate-700 mt-4 mb-2">
+                        <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Wellness Factors</h4>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label text-orange-500">Stress Level (1-10)</label>
+                        {{ form.stress_level }}
+                    </div>
+                    <div class="space-y-2">
+                        <label class="custom-label text-orange-500">Annual Income</label>
+                        {{ form.annual_income }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="custom-label text-purple-500">Financial Burden (1-10)</label>
+                        {{ form.financial_problem }}
+                    </div>
+
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="custom-label">Specific Challenges</label>
+                        {{ form.problems }}
+                    </div>
+                </div>
+
+                <div class="mt-12 flex items-center justify-end gap-4">
+                    <button type="reset" class="px-8 py-4 rounded-2xl font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        Reset
+                    </button>
+                    <button type="submit" class="ai-gradient text-white font-bold py-4 px-12 rounded-2xl shadow-xl shadow-indigo-200 hover:scale-105 active:scale-95 transition-all">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .custom-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        margin-left: 0.5rem;
+    }
+
+    /* Modern SaaS Inputs */
+    input, select, textarea {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border-radius: 1.25rem;
+        border: 1.5px solid #f1f5f9;
+        background-color: #f8fafc;
+        color: #1e293b;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .dark input, .dark select, .dark textarea {
+        background-color: #0f172a;
+        border-color: #1e293b;
+        color: #f1f5f9;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: #6366f1;
+        background-color: #fff;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1);
+    }
+
+    .dark input:focus, .dark select:focus, .dark textarea:focus {
+        background-color: #0f172a;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    textarea { min-height: 120px; resize: none; }
+</style>
+
+<script>
+    lucide.createIcons();
+
+    // LIVE IMAGE PREVIEW LOGIC
+    const imageInput = document.querySelector('input[type="file"]');
+    const avatarPreview = document.getElementById('avatar-preview');
+
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}

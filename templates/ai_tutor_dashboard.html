@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}AI Tutor | SyncAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 p-4">
+    <div class="rounded-[2.5rem] overflow-hidden bg-slate-950 text-white shadow-2xl">
+        <div class="grid lg:grid-cols-[1.35fr,0.9fr] gap-6 p-8 md:p-10 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.22),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.16),_transparent_28%),linear-gradient(135deg,_#111827,_#1e1b4b_58%,_#0f172a)]">
+            <div class="space-y-4">
+                <span class="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.3em] text-indigo-100">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    AI Tutor
+                </span>
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight">Ask your study questions and get profile-aware AI help.</h1>
+                <p class="max-w-2xl text-slate-300 text-base md:text-lg">
+                    SyncAI Tutor uses the same student profile data as your counseling and risk features, so its replies stay connected to your attendance, CGPA, stress level, and current needs.
+                </p>
+            </div>
+
+            <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                <p class="text-xs font-black uppercase tracking-[0.3em] text-indigo-100/80">Quick Snapshot</p>
+                <div class="mt-6 grid grid-cols-2 gap-4 text-center">
+                    <div class="rounded-2xl bg-white/5 p-4">
+                        <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black">Risk</p>
+                        <p class="mt-2 text-3xl font-black {% if risk == 'High' %}text-rose-400{% elif risk == 'Medium' %}text-amber-300{% else %}text-emerald-400{% endif %}">{{ risk }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/5 p-4">
+                        <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black">Attendance</p>
+                        <p class="mt-2 text-3xl font-black text-sky-300">{{ student.attendance }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[0.95fr,1.2fr] gap-8">
+        <div class="space-y-8">
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Tutor Focus</p>
+                <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Good questions to ask</h2>
+                <div class="mt-6 space-y-4">
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 p-4 text-sm text-slate-600 dark:text-slate-300">How can I improve my attendance without falling behind in coursework?</div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 p-4 text-sm text-slate-600 dark:text-slate-300">Give me a study plan for improving my CGPA this month.</div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 p-4 text-sm text-slate-600 dark:text-slate-300">What should I do when stress is affecting my concentration?</div>
+                </div>
+            </div>
+
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">AI Suggestions</p>
+                <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Current profile hints</h2>
+                <div class="mt-6 space-y-4">
+                    {% for suggestion in suggestions %}
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 flex items-start gap-4">
+                        <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-500 shrink-0">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-sm leading-7 text-slate-600 dark:text-slate-300">{{ suggestion }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none flex flex-col h-[680px] overflow-hidden">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-900 dark:text-white">SyncAI Tutor</h3>
+                        <p class="text-xs uppercase tracking-[0.2em] text-emerald-500 font-bold">Profile Connected</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tutor-chat-window" class="flex-1 min-h-0 overflow-y-auto p-6 space-y-5 scroll-smooth">
+                {% for item in chat_history %}
+                <div class="chat-row flex {% if item.sender == 'user' %}justify-end{% else %}justify-start{% endif %}">
+                    <div class="max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm {% if item.sender == 'user' %}bg-indigo-600 text-white rounded-br-md{% else %}bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-md{% endif %}">
+                        <p class="text-xs font-black uppercase tracking-[0.18em] mb-2 {% if item.sender == 'user' %}text-indigo-100{% else %}text-slate-400{% endif %}">
+                            {{ item.sender }}
+                        </p>
+                        <p class="text-sm leading-7">{{ item.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="p-6 border-t border-slate-200 dark:border-slate-800">
+                <form id="tutor-chat-form" method="POST" class="flex items-end gap-3">
+                    {% csrf_token %}
+                    <div class="flex-1">
+                        <label class="sr-only" for="message">Message</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Ask your tutor about concepts, revision, attendance, or study strategy..." class="w-full rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 font-bold shadow-lg shadow-indigo-500/20 transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const tutorChatWindow = document.getElementById('tutor-chat-window');
+    const tutorChatForm = document.getElementById('tutor-chat-form');
+    const tutorMessageInput = document.getElementById('message');
+    const tutorCsrfToken = tutorChatForm?.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+
+    const scrollTutorChatToBottom = () => {
+        if (tutorChatWindow) {
+            tutorChatWindow.scrollTop = tutorChatWindow.scrollHeight;
+        }
+    };
+
+    const buildTutorRow = (sender, text) => {
+        const row = document.createElement('div');
+        row.className = `chat-row flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'user'
+            ? 'max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm bg-indigo-600 text-white rounded-br-md'
+            : 'max-w-[88%] rounded-[1.5rem] px-5 py-4 shadow-sm bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-200 rounded-bl-md';
+
+        const label = document.createElement('p');
+        label.className = sender === 'user'
+            ? 'text-xs font-black uppercase tracking-[0.18em] mb-2 text-indigo-100'
+            : 'text-xs font-black uppercase tracking-[0.18em] mb-2 text-slate-400';
+        label.textContent = sender;
+
+        const body = document.createElement('p');
+        body.className = 'text-sm leading-7';
+        body.textContent = text;
+
+        bubble.appendChild(label);
+        bubble.appendChild(body);
+        row.appendChild(bubble);
+        return row;
+    };
+
+    scrollTutorChatToBottom();
+
+    if (tutorChatForm && tutorMessageInput && tutorCsrfToken) {
+        tutorChatForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const text = tutorMessageInput.value.trim();
+            if (!text) return;
+
+            const submitButton = tutorChatForm.querySelector('button[type="submit"]');
+            if (submitButton) submitButton.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('message', text);
+                formData.append('csrfmiddlewaretoken', tutorCsrfToken);
+
+                const response = await fetch(tutorChatForm.action || window.location.href, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData,
+                });
+
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.error || 'Unable to send message right now.');
+                }
+
+                payload.messages.forEach((item) => {
+                    tutorChatWindow.appendChild(buildTutorRow(item.sender, item.text));
+                });
+                tutorMessageInput.value = '';
+                scrollTutorChatToBottom();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                if (submitButton) submitButton.disabled = false;
+                tutorMessageInput.focus();
+            }
+        });
+    }
+</script>
+{% endblock %}

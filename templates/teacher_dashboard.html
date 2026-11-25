@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Portal | SyncAI{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 p-4">
+    <div class="rounded-[2.5rem] overflow-hidden bg-slate-950 text-white shadow-2xl">
+        <div class="grid lg:grid-cols-[1.4fr,0.9fr] gap-6 p-8 md:p-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.25),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.22),_transparent_30%),linear-gradient(135deg,_#082f49,_#0f172a_58%,_#111827)]">
+            <div class="space-y-4">
+                <span class="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.3em] text-cyan-100">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    Teacher Oversight
+                </span>
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight">Teacher portal for live student monitoring.</h1>
+                <p class="max-w-2xl text-slate-300 text-base md:text-lg">
+                    Review academic health, spot at-risk learners quickly, and focus your attention where intervention matters most.
+                </p>
+            </div>
+
+            <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                <p class="text-xs font-black uppercase tracking-[0.3em] text-cyan-100/80">Priority Snapshot</p>
+                <div class="mt-6 grid grid-cols-3 gap-4 text-center">
+                    <div class="rounded-2xl bg-rose-500/10 px-4 py-5">
+                        <p class="text-3xl font-black text-rose-300">{{ high_risk_count }}</p>
+                        <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-rose-100/80">High Risk</p>
+                    </div>
+                    <div class="rounded-2xl bg-amber-400/10 px-4 py-5">
+                        <p class="text-3xl font-black text-amber-200">{{ medium_risk_count }}</p>
+                        <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-100/80">Medium</p>
+                    </div>
+                    <div class="rounded-2xl bg-emerald-400/10 px-4 py-5">
+                        <p class="text-3xl font-black text-emerald-200">{{ low_risk_count }}</p>
+                        <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-100/80">Low</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Students</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ student_count }}</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Profiles currently available to review.</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Average CGPA</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ avg_cgpa }}</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Academic performance across all student profiles.</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Average Attendance</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ avg_attendance }}%</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Attendance trend visible to mentors at a glance.</p>
+        </div>
+        <div class="rounded-[2rem] border border-slate-200/70 bg-white/80 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Average Stress</p>
+            <p class="mt-3 text-4xl font-black text-slate-900 dark:text-white">{{ avg_stress }}</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Useful for early counseling and outreach.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[0.95fr,1.45fr] gap-8">
+        <div class="space-y-8">
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Immediate Attention</p>
+                        <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">High-risk learners</h2>
+                    </div>
+                    <div class="rounded-2xl bg-rose-500/10 px-4 py-2 text-sm font-bold text-rose-500">
+                        {{ high_risk_count }} flagged
+                    </div>
+                </div>
+                <div class="mt-6 space-y-4">
+                    {% for student in flagged_students %}
+                    <a href="{% url 'student_detail' student.id %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="block rounded-2xl border border-rose-200 bg-rose-50/80 p-4 transition-transform hover:-translate-y-1 dark:border-rose-900/60 dark:bg-rose-950/20">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-black text-slate-900 dark:text-white">{{ student.username }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{{ student.course }} • Year {{ student.year }}</p>
+                            </div>
+                            <span class="rounded-full bg-rose-500 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-white">{{ student.risk }}</span>
+                        </div>
+                        <div class="mt-3 grid grid-cols-3 gap-3 text-center">
+                            <div class="rounded-xl bg-white/80 px-3 py-2 dark:bg-slate-900/50">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">CGPA</p>
+                                <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.cgpa }}</p>
+                            </div>
+                            <div class="rounded-xl bg-white/80 px-3 py-2 dark:bg-slate-900/50">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Attend</p>
+                                <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.attendance }}%</p>
+                            </div>
+                            <div class="rounded-xl bg-white/80 px-3 py-2 dark:bg-slate-900/50">
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Stress</p>
+                                <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ student.stress_level }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/70 p-5 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-300">
+                        No high-risk students right now. The current cohort looks stable.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Action Queue</p>
+                <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Students needing follow-up</h2>
+                <div class="mt-6 space-y-3">
+                    {% for student in needs_attention %}
+                    <a href="{% url 'student_detail' student.id %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 transition-colors hover:bg-slate-100 dark:bg-slate-800/70 dark:hover:bg-slate-800">
+                        <div>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ student.username }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                {{ student.course }} • Attendance {{ student.attendance }}% • Stress {{ student.stress_level }}
+                            </p>
+                        </div>
+                        <span class="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em]
+                            {% if student.risk == 'High' %}
+                                bg-rose-500 text-white
+                            {% else %}
+                                bg-amber-400/20 text-amber-700 dark:text-amber-300
+                            {% endif %}">
+                            {{ student.risk }}
+                        </span>
+                    </a>
+                    {% empty %}
+                    <p class="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-500 dark:bg-slate-800/70 dark:text-slate-300">
+                        No medium- or high-risk students are waiting for intervention.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[2.25rem] border border-slate-200/70 bg-white/85 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-none">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Student Directory</p>
+                    <h2 class="mt-2 text-2xl font-black text-slate-900 dark:text-white">Class performance overview</h2>
+                </div>
+                <div class="rounded-2xl bg-cyan-500/10 px-4 py-2 text-sm font-bold text-cyan-700 dark:text-cyan-300">
+                    Live list of all registered student profiles
+                </div>
+            </div>
+
+            <div class="mt-6 overflow-x-auto">
+                <table class="w-full min-w-[760px] text-left">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                            <th class="pb-4">Student</th>
+                            <th class="pb-4">Course</th>
+                            <th class="pb-4">CGPA</th>
+                            <th class="pb-4">Attendance</th>
+                            <th class="pb-4">Stress</th>
+                            <th class="pb-4">Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        {% for student in student_rows %}
+                        <tr class="align-top">
+                            <td class="py-4 pr-4">
+                                <a href="{% url 'student_detail' student.id %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="flex items-center gap-3">
+                                    <div class="h-14 w-14 overflow-hidden rounded-[1.25rem] bg-cyan-100 dark:bg-cyan-950/40">
+                                        {% if student.profile_image_url %}
+                                        <img src="{{ student.profile_image_url }}" alt="{{ student.username }}" class="h-full w-full object-cover">
+                                        {% else %}
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ student.username }}" alt="{{ student.username }}" class="h-full w-full object-cover">
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-900 dark:text-white">{{ student.username }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Year {{ student.year }}</p>
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="py-4 pr-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{{ student.course }}</td>
+                            <td class="py-4 pr-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{{ student.cgpa }}</td>
+                            <td class="py-4 pr-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{{ student.attendance }}%</td>
+                            <td class="py-4 pr-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{{ student.stress_level }}</td>
+                            <td class="py-4">
+                                <span class="inline-flex rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em]
+                                    {% if student.risk == 'High' %}
+                                        bg-rose-500 text-white
+                                    {% elif student.risk == 'Medium' %}
+                                        bg-amber-400/20 text-amber-700 dark:text-amber-300
+                                    {% else %}
+                                        bg-emerald-500/15 text-emerald-700 dark:text-emerald-300
+                                    {% endif %}">
+                                    {{ student.risk }}
+                                </span>
+                                {% if student.problems %}
+                                <p class="mt-2 max-w-[220px] text-xs text-slate-500 dark:text-slate-400">{{ student.problems|truncatechars:70 }}</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                                No student profiles are available yet. Once students complete their profiles, they will appear here.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
