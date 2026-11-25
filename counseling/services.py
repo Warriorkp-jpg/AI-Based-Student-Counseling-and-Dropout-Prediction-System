@@ -6,11 +6,13 @@ from students.utils import calculate_risk, generate_suggestions
 
 def _student_context(student_profile):
     return (
-        f"CGPA={student_profile.cgpa}, attendance={student_profile.attendance}%, "
+        f"CGPA={student_profile.cgpa}, "
+        f"attendance={student_profile.attendance}%, "
         f"stress_level={student_profile.stress_level}/10, "
         f"financial_problem={student_profile.financial_problem}, "
         f"annual_income={student_profile.annual_income}, "
-        f"course={student_profile.course}, year={student_profile.year}, "
+        f"course={student_profile.course}, "
+        f"year={student_profile.year}, "
         f"college={student_profile.clg_name}, "
         f"reported_problems={student_profile.problems or 'none'}"
     )
@@ -32,7 +34,7 @@ def _fallback_advice(student_profile):
     for step in suggestions[:3]:
         lines.append(f"- {step}")
 
-    if len(lines) == 4:
+    if not suggestions:
         lines.extend([
             "- Keep your class attendance steady.",
             "- Focus on one weak academic area at a time.",
@@ -102,7 +104,7 @@ def _generate_text(prompt):
         model_name = getattr(
             settings,
             "GEMINI_MODEL",
-            "gemini-3.8-flash"
+            "gemini-2.5-flash"
         )
 
         response = client.models.generate_content(
