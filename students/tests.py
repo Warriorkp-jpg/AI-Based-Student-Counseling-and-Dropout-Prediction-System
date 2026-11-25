@@ -164,3 +164,131 @@ class DashboardRoutingTests(TestCase):
 
         self.assertContains(response, 'CSE note')
         self.assertNotContains(response, 'MBA note')
+
+
+class FeedbackSecurityTests(TestCase):
+    def setUp(self):
+        from django.test import Client
+
+        self.client = Client(enforce_csrf_checks=True)
+        self.teacher = User.objects.create_user(
+            username='secure_teacher', password='secret123', role='teacher'
+        )
+        self.other_teacher = User.objects.create_user(
+            username='other_teacher', password='secret123', role='teacher'
+        )
+        self.student = User.objects.create_user(
+            username='secure_student', password='secret123', role='student'
+        )
+        self.other_student = User.objects.create_user(
+            username='other_student', password='secret123', role='student'
+        )
+        self.student_profile = StudentProfile.objects.create(
+            user=self.student, course='cse', year=2
+        )
+        StudentProfile.objects.create(
+            user=self.other_student, course='mba', year=1
+        )
+        self.conversation = FeedbackConversation.objects.create(
+            teacher=self.teacher, student=self.student
+        )
+        self.other_conversation = FeedbackConversation.objects.create(
+            teacher=self.other_teacher, student=self.other_student
+        )
+
+    def _csrf_headers(self, url):
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        token = response.cookies['csrftoken'].value
+        return {'HTTP_X_CSRFTOKEN': token}
+
+    def test_teacher_private_message_requires_csrf_token(self):
+        self.client.login(username='secure_teacher', password='secret123')
+        response = self.client.post(reverse('teacher_feedback_hub'), {
+            'action': 'message',
+            'conversation_id': self.conversation.id,
+            'body': 'A message without a CSRF token',
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(FeedbackMessage.objects.exists())
+
+    def test_teacher_can_send_private_message_with_csrf_token(self):
+        self.client.login(username='secure_teacher', password='secret123')
+        url = reverse('teacher_feedback_hub') + f'?conversation={self.conversation.id}'
+        headers = self._csrf_headers(url)
+        response = self.client.post(reverse('teacher_feedback_hub'), {
+            'action': 'message',
+            'conversation_id': self.conversation.id,
+            'body': 'Please review the feedback notes.',
+        }, **headers)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(FeedbackMessage.objects.filter(
+            conversation=self.conversation, sender=self.teacher
+        ).exists())
+
+    def test_student_can_reply_with_csrf_token(self):
+        self.client.login(username='secure_student', password='secret123')
+        url = reverse('student_feedback_inbox') + f'?conversation={self.conversation.id}'
+        headers = self._csrf_headers(url)
+        response = self.client.post(reverse('student_feedback_inbox'), {
+            'conversation_id': self.conversation.id,
+            'body': 'Thank you for the feedback.',
+        }, **headers)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(FeedbackMessage.objects.filter(
+            conversation=self.conversation, sender=self.student
+        ).exists())
+
+    def test_teacher_cannot_read_another_teachers_conversation(self):
+        self.client.login(username='secure_teacher', password='secret123')
+        FeedbackMessage.objects.create(
+            conversation=self.other_conversation,
+            sender=self.other_teacher,
+            body='Private message belonging to another teacher.',
+        )
+        response = self.client.get(
+            reverse('teacher_feedback_hub') + f'?conversation={self.other_conversation.id}'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Private message belonging to another teacher.')
+
+    def test_student_cannot_read_another_students_conversation(self):
+        self.client.login(username='secure_student', password='secret123')
+        FeedbackMessage.objects.create(
+            conversation=self.other_conversation,
+            sender=self.other_teacher,
+            body='Private message belonging to another student.',
+        )
+        response = self.client.get(
+            reverse('student_feedback_inbox') + f'?conversation={self.other_conversation.id}'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Private message belonging to another student.')
+
+    def test_malformed_conversation_id_does_not_crash(self):
+        self.client.login(username='secure_teacher', password='secret123')
+        response = self.client.get(reverse('teacher_feedback_hub') + '?conversation=not-a-number')
+        self.assertEqual(response.status_code, 200)
+
+    def test_student_cannot_open_teacher_feedback_hub(self):
+        self.client.login(username='secure_student', password='secret123')
+        response = self.client.get(reverse('teacher_feedback_hub'))
+        self.assertRedirects(response, reverse('student_feedback_inbox'))
+
+    def test_empty_or_oversized_message_is_not_saved(self):
+        self.client.login(username='secure_teacher', password='secret123')
+        url = reverse('teacher_feedback_hub') + f'?conversation={self.conversation.id}'
+        headers = self._csrf_headers(url)
+
+        self.client.post(reverse('teacher_feedback_hub'), {
+            'action': 'message',
+            'conversation_id': self.conversation.id,
+            'body': '   ',
+        }, **headers)
+        self.client.post(reverse('teacher_feedback_hub'), {
+            'action': 'message',
+            'conversation_id': self.conversation.id,
+            'body': 'x' * 4001,
+        }, **headers)
+
+        self.assertFalse(FeedbackMessage.objects.exists())
