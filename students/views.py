@@ -375,12 +375,20 @@ def course_hub(request):
 
 def _load_feedback_conversation(conversation_id, user, is_teacher):
     """Fetch a feedback thread only when the logged-in user belongs to it."""
+    try:
+        conversation_pk = int(conversation_id)
+    except (TypeError, ValueError):
+        return None
+
+    if conversation_pk < 1:
+        return None
+
     conversations = FeedbackConversation.objects.select_related('teacher', 'student')
     if is_teacher:
         conversations = conversations.filter(teacher=user)
     else:
         conversations = conversations.filter(student=user)
-    return conversations.filter(pk=conversation_id).first()
+    return conversations.filter(pk=conversation_pk).first()
 
 
 @login_required
@@ -426,7 +434,11 @@ def teacher_feedback_hub(request):
 
         if action == 'start_conversation':
             student_id = request.POST.get('student_id')
-            student_profile = students.filter(pk=student_id).first()
+            try:
+                student_id = int(student_id)
+            except (TypeError, ValueError):
+                student_id = None
+            student_profile = students.filter(pk=student_id).first() if student_id and student_id > 0 else None
             if not student_profile:
                 messages.error(request, "That student could not be found.")
                 return redirect('teacher_feedback_hub')
