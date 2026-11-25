@@ -8,6 +8,8 @@ Activate your virtual environment, install the dependencies, and run:
 python manage.py check
 python manage.py makemigrations --check --dry-run
 python manage.py test
+
+You can also run these checks manually from GitHub: open **Actions → Django checks → Run workflow** on the feature branch.
 ```
 
 The automated tests use an empty Gemini setting so they do not spend API quota or make external Gemini requests.
