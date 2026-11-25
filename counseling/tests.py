@@ -54,7 +54,6 @@ class GeminiDiagnosticCommandTests(TestCase):
     @override_settings(GEMINI_API_KEY='test-key-not-used-for-network')
     def test_command_reports_success_for_a_mocked_live_response(self):
         from io import StringIO
-        from types import SimpleNamespace
         from unittest.mock import patch
 
         from django.core.management import call_command
