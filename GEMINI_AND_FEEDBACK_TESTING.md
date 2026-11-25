@@ -1,39 +1,59 @@
-# Feedback and Gemini verification
+# Gemini and feedback testing
 
-## Run the Django test suite
+## 1. Configure local environment
 
-Activate your virtual environment, install the dependencies, and run:
+Create a local `.env` file in the project root. Do not commit this file.
 
-```bash
-python manage.py check
-python manage.py makemigrations --check --dry-run
-python manage.py test
-
-You can also run these checks manually from GitHub: open **Actions → Django checks → Run workflow** on the feature branch.
+```dotenv
+DJANGO_SECRET_KEY=replace-with-a-new-random-secret
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
-The automated tests use an empty Gemini setting so they do not spend API quota or make external Gemini requests.
+Generate a Django secret locally with:
 
-## Test the currently configured Gemini API key
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
 
-To verify the key configured in your local Django settings, run:
+Never paste API keys or Django secrets into source files, commits, screenshots, or chat messages. If a key was ever committed, revoke it and create a replacement; deleting it from the latest version does not erase Git history.
+
+## 2. Run local checks
+
+Activate your virtual environment, install dependencies, and run:
+
+```bash
+python -m pip install -r requirements.txt
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test --verbosity 2
+```
+
+The automated tests should not make live Gemini requests or consume API quota.
+
+## 3. Test Gemini connectivity
+
+After configuring a valid key in `.env`, run:
 
 ```bash
 python manage.py check_gemini_api
 ```
 
-This command sends a small live request to Gemini. A successful result confirms that the configured key can currently reach the selected model. A failure may indicate an invalid/restricted key, unavailable model, disabled API access, network trouble, or exhausted quota.
+This sends a small live request to the configured model and consumes a small amount of API quota. The command does not display the key.
 
-The command does not print or change the key. It does consume a small amount of API quota.
+## 4. Feedback and private conversations
 
-## Feedback and private conversations
+Test these flows with separate student and staff accounts:
 
-- Teachers and admins can post course announcements and open student conversation threads.
-- Students can view announcements matching their course and reply only in their own threads.
-- Both private-message forms include CSRF protection.
-- The server checks that the current user belongs to the conversation before showing or saving messages.
-- Message and announcement input is validated before saving.
+- Staff can publish announcements.
+- Students see only announcements intended for their course.
+- Students can access and reply only to their own conversation threads.
+- Private-message forms include CSRF protection.
+- Server-side authorization is checked before reading or saving messages.
+- Invalid or empty message input is rejected.
 
-## Git workflow
+## 5. Git workflow
 
-All changes for this work are on `fix/feedback-private-chat-csrf-api`. Review the draft pull request before merging it into `main`.
+Changes should be reviewed and tested on a feature branch before they are merged into `main`.
