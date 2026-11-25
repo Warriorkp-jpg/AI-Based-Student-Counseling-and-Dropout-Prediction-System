@@ -1,7 +1,10 @@
+import logging
 
 from django.conf import settings
 
 from students.utils import calculate_risk, generate_suggestions
+
+logger = logging.getLogger(__name__)
 
 
 def _student_context(student_profile):
@@ -61,7 +64,6 @@ def _fallback_chat_reply(student_profile):
 
 def _build_model():
     key = getattr(settings, "GEMINI_API_KEY", "").strip()
-
     if not key:
         return None
 
@@ -72,22 +74,18 @@ def _build_model():
 
 def _extract_text(response):
     response_text = getattr(response, "text", None)
-
     if response_text:
         return response_text.strip()
 
     candidates = getattr(response, "candidates", None) or []
-
     for candidate in candidates:
         content = getattr(candidate, "content", None)
         parts = getattr(content, "parts", None) or []
-
         chunks = [
             getattr(part, "text", "")
             for part in parts
             if getattr(part, "text", "")
         ]
-
         if chunks:
             return "\n".join(chunks).strip()
 
@@ -96,24 +94,16 @@ def _extract_text(response):
 
 def _generate_text(prompt):
     client = _build_model()
-
     if client is None:
         return ""
 
     try:
-        model_name = getattr(
-            settings,
-            "GEMINI_MODEL",
-            "gemini-2.5-flash"
-        )
-
+        model_name = getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")
         response = client.models.generate_content(
             model=model_name,
-            contents=prompt
+            contents=prompt,
         )
-
         return _extract_text(response)
-
     finally:
         client.close()
 
@@ -121,9 +111,8 @@ def _generate_text(prompt):
 def _is_quota_error(exc):
     error_code = str(getattr(exc, "code", "")).lower()
     error_message = str(exc).lower()
-
     return (
-        error_code in ("429", "resource_exhausted")
+        error_code in {"429", "resource_exhausted"}
         or "resource_exhausted" in error_message
         or "quota" in error_message
     )
@@ -147,29 +136,24 @@ def get_ai_advice(student_profile):
     try:
         response_text = _generate_text(prompt)
         return response_text or _fallback_advice(student_profile)
-
     except Exception as exc:
-        print(f"AI ERROR: {exc}")
-
+        logger.warning("AI advice generation failed (%s).", type(exc).__name__)
         if _is_quota_error(exc):
             return (
                 "Gemini AI is configured, but the current API key has "
                 "no available quota right now. Please check your "
                 "Gemini API quota and try again."
             )
-
         return _fallback_advice(student_profile)
 
 
 def get_chatbot_reply(student_profile, user_message, chat_history=None):
     chat_history = chat_history or []
-
     history_lines = []
 
     for item in chat_history[-6:]:
         sender = item.get("sender", "user")
         message_text = item.get("text", "").strip()
-
         if message_text:
             history_lines.append(f"{sender.upper()}: {message_text}")
 
@@ -206,15 +190,12 @@ def get_chatbot_reply(student_profile, user_message, chat_history=None):
     try:
         response_text = _generate_text(prompt)
         return response_text or _fallback_chat_reply(student_profile)
-
     except Exception as exc:
-        print(f"CHATBOT AI ERROR: {exc}")
-
+        logger.warning("Chatbot response generation failed (%s).", type(exc).__name__)
         if _is_quota_error(exc):
             return (
                 "I'm connected to Gemini, but the current API key has "
                 "no available quota right now. Please check your "
                 "Gemini API quota and try again."
             )
-
         return _fallback_chat_reply(student_profile)
