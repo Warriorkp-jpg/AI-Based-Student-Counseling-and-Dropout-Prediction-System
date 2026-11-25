@@ -1,10 +1,11 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from students.models import StudentProfile
 from users.models import User
 
 
+@override_settings(GEMINI_API_KEY='')
 class AICounselingDashboardTests(TestCase):
     def setUp(self):
         self.student = User.objects.create_user(
