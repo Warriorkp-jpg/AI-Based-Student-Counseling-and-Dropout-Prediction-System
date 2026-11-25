@@ -98,7 +98,7 @@ def _generate_text(prompt):
         return ""
 
     try:
-        model_name = getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash-lite")
+        model_name = getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")
         response = client.models.generate_content(
             model=model_name,
             contents=prompt,
