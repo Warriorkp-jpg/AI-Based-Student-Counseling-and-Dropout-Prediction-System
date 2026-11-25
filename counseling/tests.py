@@ -1,10 +1,11 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from students.models import StudentProfile
 from users.models import User
 
 
+@override_settings(GEMINI_API_KEY='')
 class AICounselingDashboardTests(TestCase):
     def setUp(self):
         self.student = User.objects.create_user(
@@ -47,3 +48,33 @@ class AICounselingDashboardTests(TestCase):
 
         self.assertRedirects(response, reverse('ai_counseling_dashboard'))
         self.assertIn('ai_counseling_chat', self.client.session)
+
+
+class GeminiDiagnosticCommandTests(TestCase):
+    @override_settings(GEMINI_API_KEY='test-key-not-used-for-network')
+    def test_command_reports_success_for_a_mocked_live_response(self):
+        from io import StringIO
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from django.core.management import call_command
+
+        output = StringIO()
+        with patch(
+            'counseling.management.commands.check_gemini_api._build_model'
+        ) as build_model:
+            build_model.return_value.generate_content.return_value = SimpleNamespace(
+                text='GEMINI_CONNECTION_OK'
+            )
+            call_command('check_gemini_api', stdout=output)
+
+        self.assertIn('Gemini API connection is working.', output.getvalue())
+        build_model.return_value.generate_content.assert_called_once()
+
+    @override_settings(GEMINI_API_KEY='')
+    def test_command_refuses_to_run_without_a_configured_key(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command('check_gemini_api')

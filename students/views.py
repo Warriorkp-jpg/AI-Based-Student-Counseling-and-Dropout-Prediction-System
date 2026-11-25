@@ -375,18 +375,26 @@ def course_hub(request):
 
 def _load_feedback_conversation(conversation_id, user, is_teacher):
     """Fetch a feedback thread only when the logged-in user belongs to it."""
+    try:
+        conversation_pk = int(conversation_id)
+    except (TypeError, ValueError):
+        return None
+
+    if conversation_pk < 1:
+        return None
+
     conversations = FeedbackConversation.objects.select_related('teacher', 'student')
     if is_teacher:
         conversations = conversations.filter(teacher=user)
     else:
         conversations = conversations.filter(student=user)
-    return conversations.filter(pk=conversation_id).first()
+    return conversations.filter(pk=conversation_pk).first()
 
 
 @login_required
 def teacher_feedback_hub(request):
-    """Teachers can broadcast course feedback or continue a private student thread."""
-    if request.user.role == 'student':
+    """Teachers and admins can post course feedback and message students privately."""
+    if request.user.role not in {'teacher', 'admin'}:
         messages.info(request, "Feedback management is available for teachers.")
         return redirect('student_feedback_inbox')
 
@@ -395,14 +403,26 @@ def teacher_feedback_hub(request):
     selected_id = request.GET.get('conversation') or request.POST.get('conversation_id')
     if selected_id:
         selected_conversation = _load_feedback_conversation(selected_id, request.user, True)
+        if not selected_conversation:
+            messages.error(request, "That conversation could not be found.")
+            if request.method == 'POST':
+                return redirect('teacher_feedback_hub')
 
     if request.method == 'POST':
         action = request.POST.get('action')
+
         if action == 'announcement':
             title = request.POST.get('title', '').strip()
             body = request.POST.get('body', '').strip()
             target_course = request.POST.get('target_course', '').strip()
-            if title and body:
+            valid_courses = {code for code, _label in StudentProfile.COURSE_CHOICES}
+            if not title or not body:
+                messages.error(request, "Please add both a title and a message.")
+            elif len(title) > 120 or len(body) > 5000:
+                messages.error(request, "The title or announcement is too long.")
+            elif target_course and target_course not in valid_courses:
+                messages.error(request, "Please choose a valid course.")
+            else:
                 FeedbackAnnouncement.objects.create(
                     teacher=request.user,
                     title=title,
@@ -410,25 +430,34 @@ def teacher_feedback_hub(request):
                     target_course=target_course,
                 )
                 messages.success(request, "Feedback announcement sent.")
-            else:
-                messages.error(request, "Please add both a title and a message.")
             return redirect('teacher_feedback_hub')
 
         if action == 'start_conversation':
             student_id = request.POST.get('student_id')
-            student_profile = students.filter(pk=student_id).first()
+            try:
+                student_id = int(student_id)
+            except (TypeError, ValueError):
+                student_id = None
+            student_profile = students.filter(pk=student_id).first() if student_id and student_id > 0 else None
             if not student_profile:
                 messages.error(request, "That student could not be found.")
                 return redirect('teacher_feedback_hub')
-            conversation, _ = FeedbackConversation.objects.get_or_create(
+            conversation, _created = FeedbackConversation.objects.get_or_create(
                 teacher=request.user,
                 student=student_profile.user,
             )
             return redirect(f"{request.path}?conversation={conversation.id}")
 
-        if action == 'message' and selected_conversation:
+        if action == 'message':
+            if not selected_conversation:
+                messages.error(request, "Please select a valid conversation.")
+                return redirect('teacher_feedback_hub')
             body = request.POST.get('body', '').strip()
-            if body:
+            if not body:
+                messages.error(request, "Please enter a message before sending.")
+            elif len(body) > 4000:
+                messages.error(request, "Messages must be 4,000 characters or fewer.")
+            else:
                 FeedbackMessage.objects.create(
                     conversation=selected_conversation,
                     sender=request.user,
@@ -437,7 +466,9 @@ def teacher_feedback_hub(request):
                 selected_conversation.save(update_fields=['updated_at'])
             return redirect(f"{request.path}?conversation={selected_conversation.id}")
 
-    conversations = FeedbackConversation.objects.filter(teacher=request.user).select_related('student').order_by('-updated_at')
+    conversations = FeedbackConversation.objects.filter(
+        teacher=request.user
+    ).select_related('student').order_by('-updated_at')
     announcements = FeedbackAnnouncement.objects.filter(teacher=request.user)[:5]
     return render(request, 'teacher_feedback_hub.html', {
         'students': students,
@@ -451,7 +482,7 @@ def teacher_feedback_hub(request):
 
 @login_required
 def student_feedback_inbox(request):
-    """Students see announcements for their course and can reply in private teacher threads."""
+    """Students see course announcements and reply only in their own teacher threads."""
     student, redirect_response = _get_student_profile_or_redirect(request)
     if redirect_response:
         return redirect_response
@@ -460,10 +491,21 @@ def student_feedback_inbox(request):
     selected_id = request.GET.get('conversation') or request.POST.get('conversation_id')
     if selected_id:
         selected_conversation = _load_feedback_conversation(selected_id, request.user, False)
+        if not selected_conversation:
+            messages.error(request, "That conversation could not be found.")
+            if request.method == 'POST':
+                return redirect('student_feedback_inbox')
 
-    if request.method == 'POST' and selected_conversation:
+    if request.method == 'POST':
+        if not selected_conversation:
+            messages.error(request, "Please select a valid conversation.")
+            return redirect('student_feedback_inbox')
         body = request.POST.get('body', '').strip()
-        if body:
+        if not body:
+            messages.error(request, "Please enter a reply before sending.")
+        elif len(body) > 4000:
+            messages.error(request, "Messages must be 4,000 characters or fewer.")
+        else:
             FeedbackMessage.objects.create(
                 conversation=selected_conversation,
                 sender=request.user,
@@ -475,7 +517,9 @@ def student_feedback_inbox(request):
     announcements = FeedbackAnnouncement.objects.filter(
         Q(target_course='') | Q(target_course=student.course)
     ).select_related('teacher')
-    conversations = FeedbackConversation.objects.filter(student=request.user).select_related('teacher').order_by('-updated_at')
+    conversations = FeedbackConversation.objects.filter(
+        student=request.user
+    ).select_related('teacher').order_by('-updated_at')
     return render(request, 'student_feedback_inbox.html', {
         'student': student,
         'announcements': announcements,
