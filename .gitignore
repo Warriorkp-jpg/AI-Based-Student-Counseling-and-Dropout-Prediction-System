@@ -1,14 +1,17 @@
-@'
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 
 # Django
+*.log
 db.sqlite3
+db.sqlite3-journal
 media/
+staticfiles/
 
-# Environment
+# Environment and secrets
 .env
 .env.*
 !.env.example
@@ -16,11 +19,16 @@ media/
 # Virtual environments
 venv/
 .venv/
+env/
 .AiProject/
 
-# Node
+# Node dependencies and build caches
 node_modules/
+.npm/
+.parcel-cache/
 
-# Editor
+# Editors and operating systems
 .vscode/
-'@ | Add-Content .gitignore
+.idea/
+.DS_Store
+Thumbs.db
