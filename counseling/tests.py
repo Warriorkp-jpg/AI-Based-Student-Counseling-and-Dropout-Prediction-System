@@ -61,15 +61,15 @@ class GeminiDiagnosticCommandTests(TestCase):
 
         output = StringIO()
         with patch(
-            'counseling.management.commands.check_gemini_api._build_model'
-        ) as build_model:
-            build_model.return_value.generate_content.return_value = SimpleNamespace(
-                text='GEMINI_CONNECTION_OK'
-            )
+            'counseling.management.commands.check_gemini_api._generate_text',
+            return_value='GEMINI_CONNECTION_OK',
+        ) as generate_text:
             call_command('check_gemini_api', stdout=output)
 
         self.assertIn('Gemini API connection is working.', output.getvalue())
-        build_model.return_value.generate_content.assert_called_once()
+        generate_text.assert_called_once_with(
+            'Reply with exactly this text: GEMINI_CONNECTION_OK'
+        )
 
     @override_settings(GEMINI_API_KEY='')
     def test_command_refuses_to_run_without_a_configured_key(self):
